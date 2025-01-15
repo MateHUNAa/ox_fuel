@@ -112,12 +112,37 @@ else
 	exports.ox_target:addModel(config.pumpModels, {
 		{
 			distance = 2,
-			onSelect = function()
+			onSelect = function(data)
+				local sb = Entity(data.entity).state
+				local station = sb["station"] or false
+
+				local dp = lib.inputDialog("Fueling", {
+					{
+						type = "select",
+						label = "Select the fuel type",
+						options = {
+							{
+								label = "Gasoline",
+								value = "Gasoline"
+							},
+							{
+								label = "Diesel",
+								value = "Diesel"
+							},
+							{
+								label = "Electric",
+								value = "Electric"
+							}
+						},
+						required = true,
+						default = "Gasoline",
+					}
+				})
+
+				if not dp or not dp[1] then return end
+
 				if utils.getMoney() >= config.priceTick then
-					if GetVehicleFuelLevel(state.lastVehicle) >= 100 then
-						return lib.notify({ type = 'error', description = locale('vehicle_full') })
-					end
-					fuel.startFueling(state.lastVehicle, 1)
+					fuel.startFueling(state.lastVehicle, 1, station, sb, dp[1])
 				else
 					lib.notify({ type = 'error', description = locale('refuel_cannot_afford') })
 				end
@@ -127,11 +152,36 @@ else
 			canInteract = function(entity)
 				local sb = Entity(entity).state
 
-				if sb["fuel"] <= 0 then
+				if sb then
+					if sb["fuel"] <= 0 then
+						return false
+					end
+
+					if state.lastVehicle then
+						local vehicleName = string.lower(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+						local vehState = Entity(state.lastVehicle).state
+						if vehState["fuel-type"] then
+							local ret = utils.isCorrectFuelType(vehicleName, vehState["fuel-type"])
+
+
+							if not ret then
+								if config.Control.DEBUGPRINT_FOR_ADMINS then
+									local a = lib.callback.await("mate-admin:cb:isAdmin")
+									if a then
+										print("[ADMIN]: WRONG FUEL TYPE")
+									end
+								end
+								return false
+							end
+						end
+					end
+				else
 					return false
 				end
 
-				if state.isFueling or cache.vehicle or not DoesVehicleUseFuel(state.lastVehicle) then
+
+
+				if state.isFueling or cache.vehicle or lib.progressActive() then
 					return false
 				end
 
