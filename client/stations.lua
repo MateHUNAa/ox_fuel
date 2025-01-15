@@ -4,7 +4,7 @@ local utils = require 'client.utils'
 local stations = lib.load 'data.stations'
 
 if config.showBlips == 2 then
-	for station in pairs(stations) do utils.createBlip(station) end
+	for station, pumps in pairs(stations) do utils.createBlip(pumps[1]) end
 end
 
 if config.ox_target and config.showBlips ~= 1 then return end
@@ -12,7 +12,7 @@ if config.ox_target and config.showBlips ~= 1 then return end
 ---@param point CPoint
 local function onEnterStation(point)
 	if config.showBlips == 1 and not point.blip then
-		point.blip = utils.createBlip(point.coords)
+		point.blip = utils.createBlip(point.pumps[1])
 	end
 end
 
@@ -38,7 +38,7 @@ local function nearbyStation(point)
 					DisplayHelpTextThisFrame('fuelLeaveVehicleText', false)
 				elseif not state.isFueling then
 					local vehicleInRange = state.lastVehicle ~= 0 and
-						#(GetEntityCoords(state.lastVehicle) - playerCoords) <= 3
+					    #(GetEntityCoords(state.lastVehicle) - playerCoords) <= 3
 
 					if vehicleInRange then
 						DisplayHelpTextThisFrame('fuelHelpText', false)
