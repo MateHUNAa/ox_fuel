@@ -128,7 +128,6 @@ lib.callback.register("ox_fuel:IsPlayerOwn", (function(source, target)
 	local idf = GetPlayerIdentifierByType(target, "license"):sub(9)
 
 	local resp = MySQL.scalar.await("SELECT identifier FROM `mate-fuelstation` WHERE identifier = ?", { idf })
-	print(resp)
 	return resp
 end))
 
@@ -146,4 +145,21 @@ end))
 lib.callback.register("ox_fuel:GetStationData", (function(source, station)
 	local resp = MySQL.single.await("SELECT * FROM `mate-fuelstation` WHERE station = ?", { station })
 	return resp or false
+end))
+
+---@param data table
+lib.callback.register("ox_fuel:BuyStation", (function(source, data)
+	local success = payMoney(source, data.price)
+	if not success then return false end
+
+	local idf = GetPlayerIdentifierByType(source, "license"):sub(9)
+
+	local resp = MySQL.insert.await(
+		"INSERT INTO `mate-fuelstation` (identifier, fuel, money, station) VALUES (?,?,?,?)", {
+			idf,
+			0, 0,
+			data.station
+		})
+
+	return true
 end))
