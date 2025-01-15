@@ -48,9 +48,11 @@ end
 RegisterNetEvent('ox_fuel:UpdateStation', function(station)
 	local stationData = lib.callback.await("ox_fuel:GetStationData", false, station)
 
-	if state.currentStation then
-		state.currentStation.rawData.fuel = stationData.fuel
-		state.currentStation.fuel = stationData.fuel
+	if stationData then
+		if state.currentStation then
+			state.currentStation.rawData.fuel = stationData.fuel
+			state.currentStation.fuel = stationData.fuel
+		end
 	end
 end)
 

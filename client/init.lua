@@ -1,4 +1,5 @@
 local config = require 'config'
+local fuelType = require 'data.fuelType'
 
 if not config then return end
 
@@ -17,6 +18,7 @@ local fuel  = require 'client.fuel'
 require 'client.stationControl'
 require 'client.stations'
 
+local WRONG_FUEL = false
 local function startDrivingVehicle()
 	local vehicle = cache.vehicle
 
@@ -24,8 +26,15 @@ local function startDrivingVehicle()
 
 	local vehState = Entity(vehicle).state
 
+
+
 	if not vehState.fuel then
+		local vehicleModel = GetEntityModel(vehicle)
+		local vehicleName = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
+		local vehicleFuelType = utils.getVehicleFuelType(vehicleName)
+
 		vehState:set('fuel', GetVehicleFuelLevel(vehicle), true)
+		vehState:set("fuel-type", vehicleFuelType, true)
 		while not vehState.fuel do Wait(0) end
 	end
 
@@ -33,7 +42,16 @@ local function startDrivingVehicle()
 
 	local fuelTick = 0
 
-	while cache.seat == -1 do
+
+
+	local ret = utils.isCorrectFuelType(vehicleName, vehState["fuel-type"] or fuelType.DEFAULT)
+
+	if not ret then
+		WRONG_FUEL = true
+		fuel.setFuel(vehState, vehicle, 6, true)
+	end
+
+	while cache.seat == -1 and not WRONG_FUEL do
 		if not DoesEntityExist(vehicle) then return end
 
 		local fuelAmount = tonumber(vehState.fuel)
@@ -72,6 +90,16 @@ lib.onCache('seat', function(seat)
 	end
 end)
 
+Citizen.CreateThread((function()
+	local vehicle = GetVehiclePedIsIn(cache.ped, false)
+	if vehicle then
+		local state = Entity(vehicle).state
+		print(WRONG_FUEL)
+		print(state.fuel)
+		print(state["fuel-type"])
+	end
+end))
+
 if config.ox_target then return require 'client.target' end
 
 RegisterCommand('startfueling', function()
@@ -109,7 +137,6 @@ RegisterCommand('startfueling', function()
 		local vehicle = utils.getVehicleInFront()
 
 		if vehicle and DoesVehicleUseFuel(vehicle) then
-
 			local boneIndex = utils.getVehiclePetrolCapBoneIndex(vehicle)
 			local fuelcapPosition = boneIndex and GetWorldPositionOfEntityBone(vehicle, boneIndex)
 

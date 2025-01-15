@@ -45,14 +45,14 @@ function fuel.getPetrolCan(coords, refuel)
 	ClearPedTasks(cache.ped)
 end
 
-function fuel.startFueling(vehicle, isPump, station, stationState)
-	local vehState   = Entity(vehicle).state
-	local minusFuel  = 0
+function fuel.startFueling(vehicle, isPump, station, stationState, fuelType)
+	local vehState    = Entity(vehicle).state
+	local minusFuel   = 0
 	local stationFuel = stationState["fuel"] or 0
-	local fuelAmount = vehState.fuel or GetVehicleFuelLevel(vehicle)
-	local duration   = math.ceil((100 - fuelAmount) / config.refillValue) * config.refillTick
+	local fuelAmount  = vehState.fuel or GetVehicleFuelLevel(vehicle)
+	local duration    = math.ceil((100 - fuelAmount) / config.refillValue) * config.refillTick
 	local price, moneyAmount
-	local durability = 0
+	local durability  = 0
 
 	if 100 - fuelAmount < config.refillValue then
 		return lib.notify({ type = 'error', description = locale('tank_full') })
@@ -103,9 +103,9 @@ function fuel.startFueling(vehicle, isPump, station, stationState)
 
 	while state.isFueling do
 		if isPump then
-			minusFuel += config.Control.fuelTick
 			stationFuel -= config.Control.fuelTick
-			price += config.priceTick
+			minusFuel   += config.Control.fuelTick
+			price       += config.priceTick
 
 			if stationFuel <= 0 then
 				lib.cancelProgress()
@@ -139,9 +139,10 @@ function fuel.startFueling(vehicle, isPump, station, stationState)
 	ClearPedTasks(cache.ped)
 
 	if isPump then
-		print(station)
+		vehState:set("fuel-type", fuelType or fuelType.DEFAULT, true)
 		TriggerServerEvent('ox_fuel:pay', price, fuelAmount, NetworkGetNetworkIdFromEntity(vehicle), station, minusFuel)
-	else
+	else -- Petrol Can
+		vehState:set("fuel-type", state.petrolCan.metadata.fuelType or fuelType.DEFAULT, true)
 		TriggerServerEvent('ox_fuel:updateFuelCan', durability, NetworkGetNetworkIdFromEntity(vehicle), fuelAmount)
 	end
 end

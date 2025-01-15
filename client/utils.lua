@@ -1,3 +1,4 @@
+local fuelTypes = require 'data.fuelType'
 local utils = {}
 
 ---@param coords vector3
@@ -38,6 +39,35 @@ function utils.FindPoint(tbl)
 	end
 
 	return false, nil
+end
+
+function utils.isCorrectFuelType(model, fuelType)
+	if fuelTypes[fuelType] then
+		for _, v in ipairs(fuelTypes[fuelType]) do
+			if v == model then
+				return true
+			end
+		end
+	end
+
+	-- if fuelTypes.DEFAULT == fuelType then
+	-- 	return true
+	-- end
+
+	return false
+end
+
+function utils.getVehicleFuelType(model)
+	for fuelType, models in pairs(fuelTypes) do
+		if fuelType ~= "DEFAULT" then
+			for _, v in ipairs(models) do
+				if v == model then
+					return fuelType
+				end
+			end
+		end
+	end
+	return fuelTypes.DEFAULT
 end
 
 local bones = {

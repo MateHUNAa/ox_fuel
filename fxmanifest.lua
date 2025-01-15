@@ -30,7 +30,7 @@ client_script 'client/init.lua'
 
 files {
 	'locales/*.json',
-	'data/stations.lua',
+	'data/*.lua',
 	'client/*.lua',
 }
 

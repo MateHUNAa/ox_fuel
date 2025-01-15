@@ -10,8 +10,34 @@ if config.petrolCan.enabled then
 			onSelect = function(data)
 				local sb = Entity(data.entity).state
 				local station = sb["station"] or false
+
+				local dp = lib.inputDialog("Fueling", {
+					{
+						type = "select",
+						label = "Select the fuel type",
+						options = {
+							{
+								label = "Gasoline",
+								value = "Gasoline"
+							},
+							{
+								label = "Diesel",
+								value = "Diesel"
+							},
+							{
+								label = "Electric",
+								value = "Electric"
+							}
+						},
+						required = true,
+						default = "Gasoline",
+					}
+				})
+
+				if not dp or not dp[1] then return end
+
 				if utils.getMoney() >= config.priceTick then
-					fuel.startFueling(state.lastVehicle, 1, station, sb)
+					fuel.startFueling(state.lastVehicle, 1, station, sb, dp[1])
 				else
 					lib.notify({ type = 'error', description = locale('refuel_cannot_afford') })
 				end
