@@ -58,7 +58,15 @@ return {
 	Control = {
 		Marker = {
 			size = 3.0
-		}
+		},
+		WarpPlayerIntoTruck = true,
+
+		ReFill = {
+			min = 5,
+			max = 25
+		},
+
+		fuelTick = .5
 	}
 
 }

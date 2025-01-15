@@ -53,7 +53,8 @@ exports('setPaymentMethod', function(fn)
 	payMoney = fn or defaultPaymentMethod
 end)
 
-RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid)
+RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid, station, b)
+	local src = source
 	assert(type(price) == 'number', ('Price expected a number, received %s'):format(type(price)))
 
 	if not payMoney(source, price) then return end
@@ -61,7 +62,17 @@ RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid)
 	fuel = math.floor(fuel)
 	setFuelState(netid, fuel)
 
-	TriggerClientEvent('ox_lib:notify', source, {
+
+	if station then
+		MySQL.update.await("UPDATE `mate-fuelstation` SET `fuel` = `fuel` - ? WHERE `station` = ?", {
+			b,
+			station
+		 })
+		 
+		TriggerClientEvent("ox_fuel:UpdateStation", -1, station)
+	end
+
+	TriggerClientEvent('ox_lib:notify', src, {
 		type = 'success',
 		description = locale('fuel_success', fuel, price)
 	})
@@ -162,4 +173,24 @@ lib.callback.register("ox_fuel:BuyStation", (function(source, data)
 		})
 
 	return true
+end))
+
+
+lib.callback.register("ox_fuel:station:updateFuel", (function(source)
+	local idf = GetPlayerIdentifierByType(source, "license"):sub(9)
+
+	if not idf then return false end
+
+
+	math.randomseed(GetGameTimer())
+	local fuel = math.random(config.Control.ReFill.min, config.Control.ReFill.max)
+	local resp = MySQL.update.await("UPDATE `mate-fuelstation` SET fuel += ? WHERE identifier = ?", {
+		fuel, idf
+	})
+
+	print(json.encode(resp))
+
+	if resp.affectedRows >= 1 then
+		return true
+	end
 end))

@@ -21,18 +21,44 @@ local function onEnterStation(point)
 	local resp = lib.callback.await("ox_fuel:isStationOwned", false, point.station)
 	point.owned = resp or false
 
+
 	if resp then
 		local stationData = lib.callback.await("ox_fuel:GetStationData", false, point.station)
 		if stationData then
 			point.rawData = stationData
 			point.owner = stationData.identifier
 		end
+	else
+		point.rawData.fuel = 100
+	end
+
+	for i, entity in pairs(GetGamePool("CObject")) do
+		local entityModel = GetEntityModel(entity)
+		for _, model in pairs(config.pumpModels) do
+			if entityModel == model then
+				local sb = Entity(entity).state
+				sb:set("station", point.station or "MATEHUN", true)
+				sb:set("fuel", point.rawData.fuel or 0, true)
+				break
+			end
+		end
 	end
 end
+
+RegisterNetEvent('ox_fuel:UpdateStation', function(station)
+	local stationData = lib.callback.await("ox_fuel:GetStationData", false, station)
+
+	if state.currentStation then
+		state.currentStation.rawData.fuel = stationData.fuel
+		state.currentStation.fuel = stationData.fuel
+	end
+end)
 
 ---@param point CPoint
 local function nearbyStation(point)
 	if point.currentDistance > 30 then return end
+
+	state.currentStation = point
 
 	local pumps = point.pumps
 	local pumpDistance
@@ -47,35 +73,20 @@ local function nearbyStation(point)
 			state.nearestPump = pump
 
 			-- Ugly
-			-- if state.nearestPump then
-			-- 	Citizen.CreateThread((function()
-			-- 		while true do
-			-- 			if not state.nearestPump then break end
-			-- 			mCore.Draw3DText(state.nearestPump.x, state.nearestPump.y, state.nearestPump.z + 2,
-			-- 				("Fuel: %s"):format(point.rawData.fuel), nil, nil, nil, false, "BebasNeueOtf")
-			-- 				Wait(1)
-			-- 		end
-			-- 	end))
-			-- end
+			if state.nearestPump then
+				Citizen.CreateThread((function()
+					while true do
+						if not state.nearestPump then break end
+						mCore.Draw3DText(state.nearestPump.x, state.nearestPump.y, state.nearestPump.z + 2,
+							("Fuel: %s"):format(point.rawData.fuel), nil, nil, nil, false, "BebasNeueOtf")
+						Wait(1)
+					end
+				end))
+			end
 
 			repeat
-				local playerCoords = GetEntityCoords(cache.ped)
 				pumpDistance = #(GetEntityCoords(cache.ped) - pump)
-
-				if cache.vehicle then
-					DisplayHelpTextThisFrame('fuelLeaveVehicleText', false)
-				elseif not state.isFueling then
-					local vehicleInRange = state.lastVehicle ~= 0 and
-					    #(GetEntityCoords(state.lastVehicle) - playerCoords) <= 3
-
-					if vehicleInRange then
-						DisplayHelpTextThisFrame('fuelHelpText', false)
-					elseif config.petrolCan.enabled then
-						DisplayHelpTextThisFrame('petrolcanHelpText', false)
-					end
-				end
-
-				Wait(0)
+				Wait(100)
 			until pumpDistance > 3
 
 			state.nearestPump = nil

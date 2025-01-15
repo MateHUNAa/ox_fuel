@@ -21,20 +21,20 @@ function fuel.getPetrolCan(coords, refuel)
 	Wait(500)
 
 	if lib.progressCircle({
-			duration = config.petrolCan.duration,
-			useWhileDead = false,
-			canCancel = true,
-			disable = {
-				move = true,
-				car = true,
-				combat = true,
-			},
-			anim = {
-				dict = 'timetable@gardener@filling_can',
-				clip = 'gar_ig_5_filling_can',
-				flags = 49,
-			}
-		}) then
+		    duration = config.petrolCan.duration,
+		    useWhileDead = false,
+		    canCancel = true,
+		    disable = {
+			    move = true,
+			    car = true,
+			    combat = true,
+		    },
+		    anim = {
+			    dict = 'timetable@gardener@filling_can',
+			    clip = 'gar_ig_5_filling_can',
+			    flags = 49,
+		    }
+	    }) then
 		if refuel and exports.ox_inventory:GetItemCount('WEAPON_PETROLCAN') then
 			return TriggerServerEvent('ox_fuel:fuelCan', true, config.petrolCan.refillPrice)
 		end
@@ -45,10 +45,12 @@ function fuel.getPetrolCan(coords, refuel)
 	ClearPedTasks(cache.ped)
 end
 
-function fuel.startFueling(vehicle, isPump)
-	local vehState = Entity(vehicle).state
+function fuel.startFueling(vehicle, isPump, station, stationState)
+	local vehState   = Entity(vehicle).state
+	local minusFuel  = 0
+	local stationFuel = stationState["fuel"] or 0
 	local fuelAmount = vehState.fuel or GetVehicleFuelLevel(vehicle)
-	local duration = math.ceil((100 - fuelAmount) / config.refillValue) * config.refillTick
+	local duration   = math.ceil((100 - fuelAmount) / config.refillValue) * config.refillTick
 	local price, moneyAmount
 	local durability = 0
 
@@ -101,7 +103,13 @@ function fuel.startFueling(vehicle, isPump)
 
 	while state.isFueling do
 		if isPump then
+			minusFuel += config.Control.fuelTick
+			stationFuel -= config.Control.fuelTick
 			price += config.priceTick
+
+			if stationFuel <= 0 then
+				lib.cancelProgress()
+			end
 
 			if price + config.priceTick >= moneyAmount then
 				lib.cancelProgress()
@@ -131,7 +139,8 @@ function fuel.startFueling(vehicle, isPump)
 	ClearPedTasks(cache.ped)
 
 	if isPump then
-		TriggerServerEvent('ox_fuel:pay', price, fuelAmount, NetworkGetNetworkIdFromEntity(vehicle))
+		print(station)
+		TriggerServerEvent('ox_fuel:pay', price, fuelAmount, NetworkGetNetworkIdFromEntity(vehicle), station, minusFuel)
 	else
 		TriggerServerEvent('ox_fuel:updateFuelCan', durability, NetworkGetNetworkIdFromEntity(vehicle), fuelAmount)
 	end

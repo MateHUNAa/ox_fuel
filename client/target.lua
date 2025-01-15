@@ -7,9 +7,11 @@ if config.petrolCan.enabled then
 	exports.ox_target:addModel(config.pumpModels, {
 		{
 			distance = 2,
-			onSelect = function()
+			onSelect = function(data)
+				local sb = Entity(data.entity).state
+				local station = sb["station"] or false
 				if utils.getMoney() >= config.priceTick then
-					fuel.startFueling(state.lastVehicle, 1)
+					fuel.startFueling(state.lastVehicle, 1, station, sb)
 				else
 					lib.notify({ type = 'error', description = locale('refuel_cannot_afford') })
 				end
@@ -17,6 +19,11 @@ if config.petrolCan.enabled then
 			icon = "fas fa-gas-pump",
 			label = locale('start_fueling'),
 			canInteract = function(entity)
+				local sb = Entity(entity).state
+
+				if sb["fuel"] <= 0 then
+					return false
+				end
 				if state.isFueling or cache.vehicle or lib.progressActive() then
 					return false
 				end
@@ -26,6 +33,15 @@ if config.petrolCan.enabled then
 		},
 		{
 			distance = 2,
+			canInteract = (function(entity)
+				local sb = Entity(entity).state
+
+				local fuel = sb["fuel"] or 0
+				if fuel <= 0 then
+					return false
+				end
+				return true
+			end),
 			onSelect = function(data)
 				local petrolCan = config.petrolCan.enabled and GetSelectedPedWeapon(cache.ped) == `WEAPON_PETROLCAN`
 				local moneyAmount = utils.getMoney()
@@ -57,6 +73,12 @@ else
 			icon = "fas fa-gas-pump",
 			label = locale('start_fueling'),
 			canInteract = function(entity)
+				local sb = Entity(entity).state
+
+				if sb["fuel"] <= 0 then
+					return false
+				end
+
 				if state.isFueling or cache.vehicle or not DoesVehicleUseFuel(state.lastVehicle) then
 					return false
 				end

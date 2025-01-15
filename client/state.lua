@@ -5,7 +5,8 @@
 ---@field lastVehicle number?
 local state = {
 	isFueling = false,
-	lastVehicle = cache.vehicle or GetPlayersLastVehicle()
+	lastVehicle = cache.vehicle or GetPlayersLastVehicle(),
+	currentStation = nil
 }
 
 if state.lastVehicle == 0 then state.lastVehicle = nil end

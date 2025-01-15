@@ -31,6 +31,15 @@ function utils.getVehicleInFront()
 	end
 end
 
+function utils.FindPoint(tbl)
+	for i, pos in pairs(tbl) do
+		local closestVehicle, coords = lib.getClosestVehicle(vec3(pos.x, pos.y, pos.z), 1.8, false)
+		if not closestVehicle then return true, pos end
+	end
+
+	return false, nil
+end
+
 local bones = {
 	'petrolcap',
 	'petroltank',
