@@ -47,9 +47,35 @@ if config.petrolCan.enabled then
 			canInteract = function(entity)
 				local sb = Entity(entity).state
 
-				if sb["fuel"] <= 0 then
+				if sb then
+					if sb["fuel"] <= 0 then
+						return false
+					end
+
+					if state.lastVehicle then
+						local vehicleName = string.lower(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+						local vehState = Entity(state.lastVehicle).state
+						if vehState["fuel-type"] then
+							local ret = utils.isCorrectFuelType(vehicleName, vehState["fuel-type"])
+
+
+							if not ret then
+								if config.Control.DEBUGPRINT_FOR_ADMINS then
+									local a = lib.callback.await("mate-admin:cb:isAdmin")
+									if a then
+										print("[ADMIN]: WRONG FUEL TYPE")
+									end
+								end
+								return false
+							end
+						end
+					end
+				else
 					return false
 				end
+
+
+
 				if state.isFueling or cache.vehicle or lib.progressActive() then
 					return false
 				end

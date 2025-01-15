@@ -138,11 +138,17 @@ function fuel.startFueling(vehicle, isPump, station, stationState, fuelType)
 
 	ClearPedTasks(cache.ped)
 
+	local oldType = vehState["fuel-type"]
 	if isPump then
-		vehState:set("fuel-type", fuelType or fuelType.DEFAULT, true)
+		if oldType == fuelType then
+			vehState:set("fuel-type", fuelType or fuelType.DEFAULT, true)
+		end
+
 		TriggerServerEvent('ox_fuel:pay', price, fuelAmount, NetworkGetNetworkIdFromEntity(vehicle), station, minusFuel)
 	else -- Petrol Can
-		vehState:set("fuel-type", state.petrolCan.metadata.fuelType or fuelType.DEFAULT, true)
+		if oldType == fuelType then
+			vehState:set("fuel-type", state.petrolCan.metadata.fuelType or fuelType.DEFAULT, true)
+		end
 		TriggerServerEvent('ox_fuel:updateFuelCan', durability, NetworkGetNetworkIdFromEntity(vehicle), fuelAmount)
 	end
 end

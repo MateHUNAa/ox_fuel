@@ -64,10 +64,16 @@ RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid, station, b)
 
 
 	if station then
-		MySQL.update.await("UPDATE `mate-fuelstation` SET `fuel` = `fuel` - ? WHERE `station` = ?", {
+		local income = (price * config.Control.Tax)
+		print("Income", income)
+
+		MySQL.update.await(
+		"UPDATE `mate-fuelstation` SET `fuel` = `fuel` - ?, `money` = `money` + ? WHERE `station` = ?", {
 			b,
+			income,
 			station
 		})
+
 
 		TriggerClientEvent("ox_fuel:UpdateStation", -1, station)
 	end

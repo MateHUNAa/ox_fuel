@@ -28,10 +28,10 @@ local function startDrivingVehicle()
 
 
 
+	local vehicleModel = GetEntityModel(vehicle)
+	local vehicleName = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
+	local vehicleFuelType = utils.getVehicleFuelType(vehicleName)
 	if not vehState.fuel then
-		local vehicleModel = GetEntityModel(vehicle)
-		local vehicleName = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
-		local vehicleFuelType = utils.getVehicleFuelType(vehicleName)
 
 		vehState:set('fuel', GetVehicleFuelLevel(vehicle), true)
 		vehState:set("fuel-type", vehicleFuelType, true)

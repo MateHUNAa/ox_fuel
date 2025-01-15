@@ -56,6 +56,7 @@ return {
 	-- [[ StationControl ]] --
 
 	Control = {
+		DEBUGPRINT_FOR_ADMINS = true, -- RECOMMENDED
 		Marker = {
 			size = 3.0
 		},
@@ -66,7 +67,9 @@ return {
 			max = 25
 		},
 
-		fuelTick = .5
+		fuelTick = .5,
+
+		Tax = .75 -- (Price * Tax) == Income
 	}
 
 }
