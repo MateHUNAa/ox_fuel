@@ -2,10 +2,11 @@ local config = require 'config'
 local control = {}
 
 local isPressed = false
+local owning = false
 
-
-Citizen.CreateThread((function ()
-     
+Citizen.CreateThread((function()
+     local resp = lib.callback.await("ox_fuel:IsPlayerOwn", false)
+     owning = resp or false
 end))
 
 function control.Loop(point)
@@ -55,5 +56,13 @@ lib.registerMenu({
           }
      }
 }, onSelect)
+
+
+AddEventHandler("onResourceStop", (function(res)
+     if GetCurrentResourceName() ~= res then return end
+
+     lib.hideTextUI()
+end))
+
 
 return control

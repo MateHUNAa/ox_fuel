@@ -12,13 +12,16 @@ description 'Fuel management system with ox_inventory support'
 dependencies {
 	'ox_lib',
 	'ox_inventory',
+	'oxmysql'
 }
+
 
 shared_scripts {
 	'@ox_lib/init.lua',
 	'config.lua'
 }
 
+server_script "@oxmysql/lib/MySQL.lua"
 server_scripts {
 	'server.lua'
 }

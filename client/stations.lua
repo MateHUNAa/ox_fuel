@@ -15,6 +15,18 @@ local function onEnterStation(point)
 	if config.showBlips == 1 and not point.blip then
 		point.blip = utils.createBlip(point.pumps[1])
 	end
+
+	local resp = lib.callback.await("ox_fuel:isStationOwned", false, point.station)
+	point.owned = resp or false
+
+	if resp then
+		local stationData = lib.callback.await("ox_fuel:GetStationData", false, point.station)
+		if stationData then
+			point.rawData = stationData
+			point.owner = stationData.identifier
+		end
+	end
+	
 end
 
 ---@param point CPoint
@@ -25,7 +37,9 @@ local function nearbyStation(point)
 	local pumpDistance
 
 	-- Initiate Station Control
-	control.Loop(point)
+	if point.owned then
+		control.Loop(point)
+	end
 
 	for i = 1, #pumps do
 		local pump = pumps[i]
@@ -70,11 +84,15 @@ end
 
 for station, data in pairs(stations) do
 	lib.points.new({
-		coords = station,
+		coords   = station,
 		distance = 60,
-		onEnter = onEnterStation,
-		onExit = onExitStation,
-		nearby = nearbyStation,
-		pumps = data.pumps,
+		onEnter  = onEnterStation,
+		onExit   = onExitStation,
+		nearby   = nearbyStation,
+		pumps    = data.pumps,
+		station  = data.stationID,
+		owned    = false,
+		owner    = nil,
+		rawData  = nil
 	})
 end

@@ -1,8 +1,20 @@
 local config = require 'config'
-
 if not config then return end
 
+mCore = exports["mCore"]:getSharedObj()
 if config.versionCheck then lib.versionCheck('overextended/ox_fuel') end
+
+Citizen.CreateThread((function()
+	local table = {
+		"`identifier` VARCHAR(50) PRIMARY KEY NOT NULL DEFAULT 'MATEHUN'",
+		"`fuel` INT(11) DEFAULT 0",
+		"`money` INT(11) DEFAULT 0",
+	}
+
+
+	mCore.createSQLTable("mate-fuelstation", table)
+end))
+
 
 local ox_inventory = exports.ox_inventory
 
@@ -107,3 +119,31 @@ end)
 
 
 -- [[ Station Control ]] --
+
+lib.callback.register("ox_fuel:IsPlayerOwn", (function(source, target)
+	if not target then
+		target = source
+	end
+
+	local idf = GetPlayerIdentifierByType(target, "license"):sub(9)
+
+	local resp = MySQL.scalar.await("SELECT identifier FROM `mate-fuelstation` WHERE identifier = ?", { idf })
+	print(resp)
+	return resp
+end))
+
+
+lib.callback.register("ox_fuel:isStationOwned", (function(source, station)
+	if not station then return end
+	-- local idf = GetPlayerIdentifierByType(source, "license"):sub(9)
+
+	local resp = MySQL.scalar.await("SELECT station FROM `mate-fuelstation` WHERE station = ?",
+		{ station })
+	return resp or false
+end))
+
+
+lib.callback.register("ox_fuel:GetStationData", (function(source, station)
+	local resp = MySQL.single.await("SELECT * FROM `mate-fuelstation` WHERE station = ?", { station })
+	return resp or false
+end))
