@@ -56,20 +56,32 @@ return {
 	-- [[ StationControl ]] --
 
 	Control = {
+		-- Useful console prints for admins, Like if a player think something is a bug what is a feature then its printed to console for admins!
 		DEBUGPRINT_FOR_ADMINS = true, -- RECOMMENDED
+
+		-- Boss menu marker size
 		Marker = {
-			size = 3.0
+			size    = vec3(3.0, 3.0, 1.0),
+			
+			-- Marker Colors (VV)
+			Owned   = vec4(0, 50, 255, 80),
+			Buyable = vec4(0, 100, 0, 100)
 		},
+
+		-- Teleport player into the refill truck
 		WarpPlayerIntoTruck = true,
 
+		-- When refilling the station
 		ReFill = {
-			min = 5,
-			max = 25
+			min = 5, -- Minimum value to give from the trailer
+			max = 25, -- Maximum value to give from the trailer
 		},
 
+		-- Fuel removed from station (Added once every tick)
 		fuelTick = .5,
 
-		Tax = .75 -- (Price * Tax) == Income
+		-- (Price * Tax) == Income
+		Tax = .75,
 	}
 
 }

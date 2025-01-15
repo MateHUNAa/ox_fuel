@@ -28,9 +28,19 @@ function control.Loop(point)
 
      -- Buyable
      if not owning and not point.owned then
-          DrawMarker(1, point.coords.x, point.coords.y, point.coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-               config.Control.Marker.size, config.Control.Marker.size, config.Control.Marker.size, 0, 100, 0, 100, false,
-               false, 2, false, nil, nil, false)
+          DrawMarker(1,
+               -- Coords
+               point.coords.x, point.coords.y, point.coords.z,
+               -- Rotations
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+               -- Size
+               config.Control.Marker.size.x or 3.0, config.Control.Marker.size.y or 3.0,
+               config.Control.Marker.size.z or 1.0,
+               -- Color
+               config.Control.Marker.Buyable.x, config.Control.Marker.Buyable.y, config.Control.Marker.Buyable.z,
+               config.Control.Marker.Buyable.w,
+               -- Etc..
+               false, false, 2, false, nil, nil, false)
 
           if point.currentDistance <= config.Control.Marker.size - .5 then
                if not IsOpen then
@@ -67,14 +77,19 @@ function control.Loop(point)
           return
      end
 
+     if not owning then return end
 
-     -- Owning
+     DrawMarker(1,
+          point.coords.x, point.coords.y, point.coords.z,
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          config.Control.Marker.size.x or 3.0, config.Control.Marker.size.y or 3.0,
+          config.Control.Marker.size.z or 1.0,
+          config.Control.Marker.Owned.x, config.Control.Marker.Owned.y, config.Control.Marker.Owned.z,
+          config.Control.Marker.Owned.w,
+          false, false, 2, false, nil, nil, false)
 
-     DrawMarker(1, point.coords.x, point.coords.y, point.coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-          config.Control.Marker.size, config.Control.Marker.size, config.Control.Marker.size, 0, 50, 255, 80, false,
-          false, 2, false, nil, nil, false)
 
-     if point.currentDistance <= config.Control.Marker.size - .5 then
+     if point.currentDistance <= config.Control.Marker.size.x - .5 then
           if not isOpen then
                lib.showTextUI("Press [E] to interact")
           end

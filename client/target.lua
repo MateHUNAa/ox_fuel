@@ -53,11 +53,11 @@ if config.petrolCan.enabled then
 					end
 
 					if state.lastVehicle then
-						local vehicleName = string.lower(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+						local vehicleName = string.lower(GetDisplayNameFromVehicleModel(GetEntityModel(state
+						.lastVehicle)))
 						local vehState = Entity(state.lastVehicle).state
 						if vehState["fuel-type"] then
 							local ret = utils.isCorrectFuelType(vehicleName, vehState["fuel-type"])
-
 
 							if not ret then
 								if config.Control.DEBUGPRINT_FOR_ADMINS then
@@ -217,6 +217,21 @@ if config.petrolCan.enabled then
 				end
 				return state.petrolCan and config.petrolCan.enabled
 			end
+		},
+		{
+			distance = 2,
+			onSelect = (function(data)
+				
+			end),
+			icon = "fa-solid fa-oil-can",
+			label = "Wrong fuel-type",
+			canInteract = (function(entity)
+				local state = Entity(entity).state
+				if state then
+					return not utils.isCorrectFuelType(
+						string.lower(GetDisplayNameFromVehicleModel(GetEntityModel(entity))), state["fuel-type"])
+				end
+			end)
 		}
 	})
 end
