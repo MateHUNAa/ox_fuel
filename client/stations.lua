@@ -2,12 +2,13 @@ local config = require 'config'
 local state = require 'client.state'
 local utils = require 'client.utils'
 local stations = lib.load 'data.stations'
+local control = require 'client.stationControl'
 
 if config.showBlips == 2 then
-	for station, pumps in pairs(stations) do utils.createBlip(pumps[1]) end
+	for station, data in pairs(stations) do utils.createBlip(data.pumps[1]) end
 end
 
-if config.ox_target and config.showBlips ~= 1 then return end
+-- if config.ox_target and config.showBlips ~= 1 then return end
 
 ---@param point CPoint
 local function onEnterStation(point)
@@ -22,6 +23,9 @@ local function nearbyStation(point)
 
 	local pumps = point.pumps
 	local pumpDistance
+
+	-- Initiate Station Control
+	control.Loop(point)
 
 	for i = 1, #pumps do
 		local pump = pumps[i]
@@ -64,13 +68,13 @@ local function onExitStation(point)
 	end
 end
 
-for station, pumps in pairs(stations) do
+for station, data in pairs(stations) do
 	lib.points.new({
 		coords = station,
 		distance = 60,
 		onEnter = onEnterStation,
 		onExit = onExitStation,
 		nearby = nearbyStation,
-		pumps = pumps,
+		pumps = data.pumps,
 	})
 end

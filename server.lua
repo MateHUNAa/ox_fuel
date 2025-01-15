@@ -104,3 +104,6 @@ RegisterNetEvent('ox_fuel:updateFuelCan', function(durability, netid, fuel)
 
 	-- player is sus?
 end)
+
+
+-- [[ Station Control ]] --

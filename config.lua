@@ -50,5 +50,15 @@ return {
 		`prop_gas_pump_1c`,
 		`prop_gas_pump_1b`,
 		`prop_gas_pump_1d`,
+	},
+
+
+	-- [[ StationControl ]] --
+
+	Control = {
+		Marker = {
+			size = 3.0
+		}
 	}
+
 }

@@ -14,6 +14,7 @@ local utils = require 'client.utils'
 local state = require 'client.state'
 local fuel  = require 'client.fuel'
 
+require 'client.stationControl'
 require 'client.stations'
 
 local function startDrivingVehicle()
