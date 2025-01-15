@@ -32,9 +32,9 @@ return {
 
 	-- Enables fuel can
 	petrolCan = {
-		enabled = true,
-		duration = 5000,
-		price = 1000,
+		enabled     = true,
+		duration    = 5000,
+		price       = 1000,
 		refillPrice = 800,
 	},
 

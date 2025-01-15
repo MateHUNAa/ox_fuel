@@ -67,8 +67,8 @@ RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid, station, b)
 		MySQL.update.await("UPDATE `mate-fuelstation` SET `fuel` = `fuel` - ? WHERE `station` = ?", {
 			b,
 			station
-		 })
-		 
+		})
+
 		TriggerClientEvent("ox_fuel:UpdateStation", -1, station)
 	end
 
@@ -184,13 +184,8 @@ lib.callback.register("ox_fuel:station:updateFuel", (function(source)
 
 	math.randomseed(GetGameTimer())
 	local fuel = math.random(config.Control.ReFill.min, config.Control.ReFill.max)
-	local resp = MySQL.update.await("UPDATE `mate-fuelstation` SET fuel += ? WHERE identifier = ?", {
+	local resp = MySQL.update.await("UPDATE `mate-fuelstation` SET `fuel` = `fuel` + ? WHERE identifier = ?", {
 		fuel, idf
 	})
-
-	print(json.encode(resp))
-
-	if resp.affectedRows >= 1 then
-		return true
-	end
+	return true
 end))

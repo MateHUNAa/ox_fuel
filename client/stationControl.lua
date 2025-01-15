@@ -163,6 +163,7 @@ local function onSelect(selected, scroll, args)
           --
 
           while true do
+               local sleep = 1
                local trailing, tr = GetVehicleTrailerVehicle(truck)
 
                local p = GetOffsetFromEntityInWorldCoords(trailer, 0, 0, 2)
@@ -172,7 +173,7 @@ local function onSelect(selected, scroll, args)
                     break
                end
 
-               Wait(500)
+               Wait(sleep)
           end
 
 
