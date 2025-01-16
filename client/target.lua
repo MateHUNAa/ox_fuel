@@ -225,6 +225,10 @@ if config.petrolCan.enabled then
 			end),
 			icon = "fa-solid fa-oil-can",
 			label = "Wrong fuel-type",
+   onSelect = (function (data) 
+    local vehState = Entity(data.entity)
+    -- Progress var
+   end) 
 			canInteract = (function(entity)
 				local state = Entity(entity).state
 				if state then
