@@ -50,7 +50,6 @@ local function defaultPaymentMethod(playerId, price)
 end
 
 local payMoney = defaultPaymentMethod
-
 exports('setPaymentMethod', function(fn)
 	payMoney = fn or defaultPaymentMethod
 end)
@@ -134,6 +133,9 @@ RegisterNetEvent('ox_fuel:updateFuelCan', function(durability, netid, fuel)
 	end
 
 	-- player is sus?
+	mCore.sendMessage(("%s(%s) Tried to use a FuelCan without a fuelCan item"):format(
+		GetPlayerName(source),source
+	), mCore.RequestWebhook("fuel-station"), "mhScripts, ox-fuel")
 end)
 
 

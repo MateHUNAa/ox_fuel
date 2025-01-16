@@ -4,7 +4,7 @@ lua54 'yes'
 game 'gta5'
 
 name 'ox_fuel'
-author 'Overextended'
+author 'Overextended - MateHUN - mhScripts'
 version '1.5.1'
 repository 'https://github.com/overextended/ox_fuel'
 description 'Fuel management system with ox_inventory support'
