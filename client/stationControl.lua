@@ -111,6 +111,11 @@ function control.Loop(point)
                     args = point
                }
 
+               Options[#Options + 1] = {
+                    label = "Get Payment",
+                    args  = point
+               }
+
                lib.setMenuOptions("fuel-menu", Options)
                lib.showMenu("fuel-menu")
 
@@ -230,6 +235,9 @@ local function onSelect(selected, scroll, args)
           --
      elseif selected == 2 then
           print(args.rawData.money, args.rawData.fuel)
+     elseif selected == 3 then
+          print(json.encode(args, {indent=true}))
+          TriggerServerEvent('ox_fuel:RequestPayment', { args.station })
      end
 end
 

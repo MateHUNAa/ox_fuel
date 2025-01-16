@@ -13,6 +13,8 @@ Citizen.CreateThread((function()
 
 
 	mCore.createSQLTable("mate-fuelstation", table)
+
+	mCore.LoadWebhook("fuel-station", config.Control.Webhook)
 end))
 
 
@@ -68,11 +70,11 @@ RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid, station, b)
 		print("Income", income)
 
 		MySQL.update.await(
-		"UPDATE `mate-fuelstation` SET `fuel` = `fuel` - ?, `money` = `money` + ? WHERE `station` = ?", {
-			b,
-			income,
-			station
-		})
+			"UPDATE `mate-fuelstation` SET `fuel` = `fuel` - ?, `money` = `money` + ? WHERE `station` = ?", {
+				b,
+				income,
+				station
+			})
 
 
 		TriggerClientEvent("ox_fuel:UpdateStation", -1, station)
@@ -195,3 +197,39 @@ lib.callback.register("ox_fuel:station:updateFuel", (function(source)
 	})
 	return true
 end))
+
+
+RegisterNetEvent('ox_fuel:RequestPayment', function(station)
+	local src = source
+	local idf = GetPlayerIdentifierByType(src, "license"):sub(9)
+
+	if not idf then return end
+
+
+	if type(station) == "table" then
+		station = station[1]
+	end
+
+	local money = MySQL.scalar.await("SELECT money from `mate-fuelstation` WHERE identifier = ? AND station = ? ", {
+		idf,
+		station
+	})
+
+	if money <= 0 then return end
+
+	MySQL.update.await("UPDATE `mate-fuelstation` SET money = 0 WHERE identifier = ? AND station = ?", {
+		idf, station
+	})
+
+	local s = ox_inventory:AddItem(src, "money", money)
+
+	if not s then
+		mCore.sendMessage(
+			("%s(%s) Borrowed money from gas-station but failed to give the money to him! Money: %s\nJogossan adoljatok neki vissza mo")
+			:format(
+				GetPlayerName(src),
+				src,
+				money
+			), mCore.RequestWebhook("fuel-station"), "mhScripts, ox-fuel")
+	end
+end)

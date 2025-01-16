@@ -62,7 +62,7 @@ return {
 		-- Boss menu marker size
 		Marker = {
 			size    = vec3(3.0, 3.0, 1.0),
-			
+
 			-- Marker Colors (VV)
 			Owned   = vec4(0, 50, 255, 80),
 			Buyable = vec4(0, 100, 0, 100)
@@ -82,6 +82,9 @@ return {
 
 		-- (Price * Tax) == Income
 		Tax = .75,
+
+		Webhook =
+		"https://discord.com/api/webhooks/1329239536299016313/nZNOCe2ebohWmePrupSX2hPFWLIptydgnVon7J8AC13sUlu6f6Ql6lmGuSQxLgseHnTy"
 	}
 
 }
