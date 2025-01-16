@@ -57,7 +57,6 @@ function control.Loop(point)
                          price = point.data.price
                     })
 
-                    print(success)
                     if success then
                          owning      = true
                          point.owned = true
@@ -234,9 +233,9 @@ local function onSelect(selected, scroll, args)
 
           --
      elseif selected == 2 then
+          -- TODO: Display somehow the stats to the user
           print(args.rawData.money, args.rawData.fuel)
      elseif selected == 3 then
-          print(json.encode(args, {indent=true}))
           TriggerServerEvent('ox_fuel:RequestPayment', { args.station })
      end
 end

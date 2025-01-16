@@ -94,9 +94,6 @@ Citizen.CreateThread((function()
 	local vehicle = GetVehiclePedIsIn(cache.ped, false)
 	if vehicle then
 		local state = Entity(vehicle).state
-		print(WRONG_FUEL)
-		print(state.fuel)
-		print(state["fuel-type"])
 	end
 end))
 
