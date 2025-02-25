@@ -32,7 +32,11 @@ files {
 	'locales/*.json',
 	'data/*.lua',
 	'client/*.lua',
+	"html/index.html",
+	"html/assets/*.js",
+	"html/assets/*.css"
 }
+ui_page "html/index.html"
 
 ox_libs {
 	'math',

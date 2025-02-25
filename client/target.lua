@@ -18,19 +18,19 @@ if config.petrolCan.enabled then
 						options = {
 							{
 								label = "Gasoline",
-								value = "Gasoline"
+								value = "gas"
 							},
 							{
 								label = "Diesel",
-								value = "Diesel"
+								value = "diesel"
 							},
 							{
 								label = "Electric",
-								value = "Electric"
+								value = "electric"
 							}
 						},
 						required = true,
-						default = "Gasoline",
+						default = "gas",
 					}
 				})
 
@@ -48,13 +48,13 @@ if config.petrolCan.enabled then
 				local sb = Entity(entity).state
 
 				if sb then
-					if sb["fuel"] <= 0 then
+					if sb["gas"] <= 0 and sb["diesel"] <= 0 and sb["electric"] <= 0 then
 						return false
 					end
 
 					if state.lastVehicle then
 						local vehicleName = string.lower(GetDisplayNameFromVehicleModel(GetEntityModel(state
-						.lastVehicle)))
+							.lastVehicle)))
 						local vehState = Entity(state.lastVehicle).state
 						if vehState["fuel-type"] then
 							local ret = utils.isCorrectFuelType(vehicleName, vehState["fuel-type"])
@@ -88,6 +88,7 @@ if config.petrolCan.enabled then
 			canInteract = (function(entity)
 				local sb = Entity(entity).state
 
+				-- FIXME: TODO: types,& InputDialog
 				local fuel = sb["fuel"] or 0
 				if fuel <= 0 then
 					return false
@@ -109,6 +110,7 @@ if config.petrolCan.enabled then
 		},
 	})
 else
+	-- FIXME: TODO: Copy above here.5
 	exports.ox_target:addModel(config.pumpModels, {
 		{
 			distance = 2,
@@ -221,7 +223,7 @@ if config.petrolCan.enabled then
 		{
 			distance = 2,
 			onSelect = (function(data)
-				
+
 			end),
 			icon = "fa-solid fa-oil-can",
 			label = "Wrong fuel-type",

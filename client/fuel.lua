@@ -46,13 +46,25 @@ function fuel.getPetrolCan(coords, refuel)
 end
 
 function fuel.startFueling(vehicle, isPump, station, stationState, fuelType)
-	local vehState    = Entity(vehicle).state
-	local minusFuel   = 0
-	local stationFuel = stationState["fuel"] or 0
-	local fuelAmount  = vehState.fuel or GetVehicleFuelLevel(vehicle)
-	local duration    = math.ceil((100 - fuelAmount) / config.refillValue) * config.refillTick
+	local vehState  = Entity(vehicle).state
+	local minusFuel = 0
+	fuelType        = fuelType:match("^%s*(.-)%s*$")
+	if not (string.match(fuelType, "gas") or string.match(fuelType, "diesel") or string.match(fuelType, "electric")) then
+		return print("FATAL: fuelType is nil or not found ! err-code: fuel:53")
+	end
+	local stationFuel = stationState[tostring(fuelType)] or 0
+
+	if stationFuel <= 0 then
+		return lib.notify({
+			type = "error",
+			description = locale("station_empty")
+		})
+	end
+
+	local fuelAmount = vehState.fuel or GetVehicleFuelLevel(vehicle)
+	local duration   = math.ceil((100 - fuelAmount) / config.refillValue) * config.refillTick
 	local price, moneyAmount
-	local durability  = 0
+	local durability = 0
 
 	if 100 - fuelAmount < config.refillValue then
 		return lib.notify({ type = 'error', description = locale('tank_full') })
@@ -108,17 +120,23 @@ function fuel.startFueling(vehicle, isPump, station, stationState, fuelType)
 			price       += config.priceTick
 
 			if stationFuel <= 0 then
-				lib.cancelProgress()
+				if lib.progressActive() then
+					lib.cancelProgress()
+				end
 			end
 
 			if price + config.priceTick >= moneyAmount then
-				lib.cancelProgress()
+				if lib.progressActive() then
+					lib.cancelProgress()
+				end
 			end
 		elseif state.petrolCan then
 			durability += config.durabilityTick
 
 			if durability >= state.petrolCan.metadata.ammo then
-				lib.cancelProgress()
+				if lib.progressActive() then
+					lib.cancelProgress()
+				end
 				durability = state.petrolCan.metadata.ammo
 				break
 			end
@@ -144,7 +162,8 @@ function fuel.startFueling(vehicle, isPump, station, stationState, fuelType)
 			vehState:set("fuel-type", fuelType or fuelType.DEFAULT, true)
 		end
 
-		TriggerServerEvent('ox_fuel:pay', price, fuelAmount, NetworkGetNetworkIdFromEntity(vehicle), station, minusFuel)
+		TriggerServerEvent('ox_fuel:pay', price, fuelAmount, NetworkGetNetworkIdFromEntity(vehicle), station, minusFuel,
+			fuelType or fuelType.DEFAULT)
 	else -- Petrol Can
 		if oldType ~= fuelType then
 			vehState:set("fuel-type", state.petrolCan.metadata.fuelType or fuelType.DEFAULT, true)

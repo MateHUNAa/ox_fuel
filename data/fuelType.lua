@@ -2,8 +2,8 @@
 
      Types = {
           "diesel",
-          "Gasoline",
-          "Electric"
+          "gas",
+          "electric"
      },
 ]]
 
@@ -11,19 +11,20 @@
 
 return {
 
-     ["Diesel"] = {
+     ["diesel"] = {
           "elegy2"
      },
 
-     ["Gasoline"] = {
-          "zentorno"
+     ["gas"] = {
+          "zentorno",
+          "tampa2"
      },
 
-     ["Electric"] = {
+     ["electric"] = {
           "adder"
      },
 
      -- If a vehicle is not in the list that tanked with this:->
-     DEFAULT = "Gasoline"
+     DEFAULT = "gas"
 
 }

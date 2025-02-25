@@ -7,8 +7,11 @@ if config.versionCheck then lib.versionCheck('overextended/ox_fuel') end
 Citizen.CreateThread((function()
 	local table = {
 		"`identifier` VARCHAR(50) PRIMARY KEY NOT NULL DEFAULT 'MATEHUN'",
-		"`fuel` INT(11) DEFAULT 0",
+		"`diesel` INT(11) DEFAULT 0",
+		"`gas` INT(11) DEFAULT 0",
+		"`electric` INT(11) DEFAULT 0",
 		"`money` INT(11) DEFAULT 0",
+		"`station` VARCHAR(25) NOT NULL DEFAULT 'MATEHUN' UNIQUE"
 	}
 
 
@@ -54,7 +57,7 @@ exports('setPaymentMethod', function(fn)
 	payMoney = fn or defaultPaymentMethod
 end)
 
-RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid, station, b)
+RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid, station, b, fuelType)
 	local src = source
 	assert(type(price) == 'number', ('Price expected a number, received %s'):format(type(price)))
 
@@ -69,7 +72,8 @@ RegisterNetEvent('ox_fuel:pay', function(price, fuel, netid, station, b)
 		print("Income", income)
 
 		MySQL.update.await(
-			"UPDATE `mate-fuelstation` SET `fuel` = `fuel` - ?, `money` = `money` + ? WHERE `station` = ?", {
+			("UPDATE `mate-fuelstation` SET `%s` = `%s` - ?, `money` = `money` + ? WHERE `station` = ?"):format(
+			fuelType, fuelType), {
 				b,
 				income,
 				station
@@ -177,9 +181,9 @@ lib.callback.register("ox_fuel:BuyStation", (function(source, data)
 	local idf = GetPlayerIdentifierByType(source, "license"):sub(9)
 
 	local resp = MySQL.insert.await(
-		"INSERT INTO `mate-fuelstation` (identifier, fuel, money, station) VALUES (?,?,?,?)", {
+		"INSERT INTO `mate-fuelstation` (identifier, diesel,gas,electric, money, station) VALUES (?,?,?,?,?,?)", {
 			idf,
-			0, 0,
+			0, 0, 0, 0,
 			data.station
 		})
 
@@ -187,18 +191,20 @@ lib.callback.register("ox_fuel:BuyStation", (function(source, data)
 end))
 
 
-lib.callback.register("ox_fuel:station:updateFuel", (function(source)
+lib.callback.register("ox_fuel:station:updateFuel", (function(source, type)
 	local idf = GetPlayerIdentifierByType(source, "license"):sub(9)
 
 	if not idf then return false end
 
+	-- TODO: Check for valid types
 
 	math.randomseed(GetGameTimer())
 	local fuel = math.random(config.Control.ReFill.min, config.Control.ReFill.max)
-	local resp = MySQL.update.await("UPDATE `mate-fuelstation` SET `fuel` = `fuel` + ? WHERE identifier = ?", {
-		fuel, idf
-	})
-	return true
+	local resp = MySQL.update.await(
+		("UPDATE `mate-fuelstation` SET `%s` = `%s` + ? WHERE identifier = ?"):format(type, type), {
+			fuel, idf
+		})
+	return true, fuel, type
 end))
 
 

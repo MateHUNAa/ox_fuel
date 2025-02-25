@@ -14,6 +14,7 @@ end
 
 ---@param point CPoint
 local function onEnterStation(point)
+	control.onEnter(point)
 	if config.showBlips == 1 and not point.blip then
 		point.blip = utils.createBlip(point.pumps[1])
 	end
@@ -29,7 +30,9 @@ local function onEnterStation(point)
 			point.owner = stationData.identifier
 		end
 	else
-		point.rawData.fuel = 100
+		point.rawData.diesel   = 100
+		point.rawData.gas      = 100
+		point.rawData.electric = 100
 	end
 
 	for i, entity in pairs(GetGamePool("CObject")) do
@@ -38,7 +41,9 @@ local function onEnterStation(point)
 			if entityModel == model then
 				local sb = Entity(entity).state
 				sb:set("station", point.station or "MATEHUN", true)
-				sb:set("fuel", point.rawData.fuel or 0, true)
+				sb:set("diesel", point.rawData.diesel or 0, true)
+				sb:set("gas", point.rawData.gas or 0, true)
+				sb:set("electric", point.rawData.electric or 0, true)
 				break
 			end
 		end
@@ -50,8 +55,9 @@ RegisterNetEvent('ox_fuel:UpdateStation', function(station)
 
 	if stationData then
 		if state.currentStation then
-			state.currentStation.rawData.fuel = stationData.fuel
-			state.currentStation.fuel = stationData.fuel
+			state.currentStation.rawData = stationData
+			-- FIXME: TODO:
+			-- state.currentStation.fuel = stationData.fuel
 		end
 	end
 end)
@@ -80,7 +86,8 @@ local function nearbyStation(point)
 					while true do
 						if not state.nearestPump then break end
 						mCore.Draw3DText(state.nearestPump.x, state.nearestPump.y, state.nearestPump.z + 2,
-							("Fuel: %s"):format(point.rawData.fuel), nil, nil, nil, false, "BebasNeueOtf")
+							("Diesel: %s\nGas: %s\nElectric: %s"):format(point.rawData.diesel, point.rawData.gas,
+								point.rawData.electric), nil, nil, nil, false, "BebasNeueOtf")
 						Wait(1)
 					end
 				end))
@@ -96,9 +103,6 @@ local function nearbyStation(point)
 			return
 		end
 	end
-
-	-- Initiate Station Control
-	control.Loop(point)
 end
 
 ---@param point CPoint
@@ -106,6 +110,7 @@ local function onExitStation(point)
 	if point.blip then
 		point.blip = RemoveBlip(point.blip)
 	end
+	control.onExit(point)
 end
 
 for station, data in pairs(stations) do
@@ -120,6 +125,26 @@ for station, data in pairs(stations) do
 		owned    = false,
 		owner    = "MATEHUN",
 		rawData  = {},
-		data     = data
+		data     = data,
+
+
+		-- @FIXEME : ???
+		_update = (function(self, data)
+			self = data
+		end),
+
+
+		keyUpdate = (function(self, key, val, sub)
+			if sub then
+				print("sub:")
+				print("BEFORE: ", self[sub][key])
+				self[sub][key] = val
+				print("AFTER: ", self[sub][key], ("Expected VAL : %s"):format(val))
+			else
+				print("BEFORE: ", self[key])
+				self[key] = val
+				print("AFTER: ", self[key], ("Expected VAL : %s"):format(val))
+			end
+		end)
 	})
 end

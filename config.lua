@@ -73,7 +73,7 @@ return {
 
 		-- When refilling the station
 		ReFill = {
-			min = 5, -- Minimum value to give from the trailer
+			min = 5,  -- Minimum value to give from the trailer
 			max = 25, -- Maximum value to give from the trailer
 		},
 

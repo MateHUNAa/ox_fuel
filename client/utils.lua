@@ -1,6 +1,18 @@
 local fuelTypes = require 'data.fuelType'
 local utils = {}
 
+local Peds = {}
+
+AddEventHandler("onResourceStop", (function(res)
+	if GetCurrentResourceName() ~= res then return end
+
+	for i = 1, #Peds do
+		local ped = Peds[i]
+		if DoesEntityExist(ped) then
+		DeleteEntity(ped)
+		end
+	end
+end))
 ---@param coords vector3
 ---@return integer
 function utils.createBlip(coords)
@@ -70,6 +82,8 @@ function utils.getVehicleFuelType(model)
 	return fuelTypes.DEFAULT
 end
 
+exports("GetVehicleFuelType", utils.getVehicleFuelType)
+
 local bones = {
 	'petrolcap',
 	'petroltank',
@@ -98,6 +112,105 @@ utils.getMoney = defaultMoneyCheck
 
 exports('setMoneyCheck', function(fn)
 	utils.getMoney = fn or defaultMoneyCheck
+end)
+
+
+---@class makePedData
+---@field coords vector4
+---@field freeze? boolean
+---@field collision? boolean
+---@field scenario? string
+---@field anim? table|nil
+---@param data makePedData
+utils.makePed = (function(model, data, options)
+	if not IsModelValid(model) then
+		return print("^4Invalid Model^7: '^6" .. model .. "^7'")
+	end
+
+	local count = 1
+	if options then
+		for _, option in pairs(options) do
+			if option.onSelect then
+				count += 1
+
+				local event = ("option_%p_%s"):format(option.onSelect, count)
+				---@type function
+				local onSelect = option.onSelect
+
+				AddEventHandler(event, (function()
+					onSelect(option.args)
+				end))
+				option.event = event
+				option.onSelect = nil
+			end
+
+			if option.icon then
+				option.icon = ("fa-solid fa-%s"):format(option.icon)
+			end
+		end
+	end
+
+
+	local ped, id
+	local p = lib.points.new({
+		coords = data.coords.xyz,
+		distance = 80.0,
+		onEnter = (function()
+			lib.requestModel(model, 5000)
+
+			Peds[#Peds + 1] = CreatePed(0, model, data.coords.x, data.coords.y, data.coords.z,
+				data.coords.w,
+				false,
+				true)
+			ped = Peds[#Peds]
+
+			SetEntityInvincible(ped, true)
+			SetBlockingOfNonTemporaryEvents(ped, true)
+			FreezeEntityPosition(ped, data.freeze or true)
+
+			if data.collision then
+				SetEntityNoCollisionEntity(ped, PlayerPedId(), false)
+			end
+
+			if data.scenario then
+				TaskStartScenarioInPlace(ped, data.scenario, 0, true)
+			end
+			if data.anim then
+				local dict = data.anim[1]
+				if not HasAnimDictLoaded(dict) then
+					print("^2Loading Anim Dictionary^7: '^6" .. dict .. "^7'")
+					while not HasAnimDictLoaded(dict) do
+						RequestAnimDict(dict)
+						Wait(5)
+					end
+				end
+				TaskPlayAnim(ped, data.anim[1], data.anim[2], 1.0, 1.0, -1, 1, 0.2, false, false, false)
+			end
+
+			if options then
+				id = ("%s_ped_%s"):format("__MATEHUN__", ped)
+
+				exports["ox_target"]:addLocalEntity(ped, options)
+			end
+		end),
+
+		onExit = (function()
+			if id then
+				exports["ox_target"]:removeLocalEntity(ped)
+				id = nil
+			end
+			DeleteEntity(ped)
+			SetModelAsNoLongerNeeded(model)
+			ped = nil
+		end)
+	})
+
+
+	function p:onExit()
+		if DoesEntityExist(Peds[#Peds]) then
+			DeleteEntity(Peds[#Peds])
+		end
+	end
 end)
 
 return utils

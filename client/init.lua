@@ -24,34 +24,30 @@ local function startDrivingVehicle()
 
 	if not DoesVehicleUseFuel(vehicle) then return end
 
-	local vehState = Entity(vehicle).state
-
-
-
-	local vehicleModel = GetEntityModel(vehicle)
-	local vehicleName = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
+	local vehState        = Entity(vehicle).state
+	local vehicleModel    = GetEntityModel(vehicle)
+	local vehicleName     = string.lower(GetDisplayNameFromVehicleModel(vehicleModel))
 	local vehicleFuelType = utils.getVehicleFuelType(vehicleName)
-	if not vehState.fuel then
 
+	if not vehState.fuel then
 		vehState:set('fuel', GetVehicleFuelLevel(vehicle), true)
-		vehState:set("fuel-type", vehicleFuelType, true)
+		vehState:set("fuel-type", vehicleFuelType or fuelType.DEFAULT, true)
 		while not vehState.fuel do Wait(0) end
 	end
 
 	SetVehicleFuelLevel(vehicle, vehState.fuel)
 
 	local fuelTick = 0
-
-
-
-	local ret = utils.isCorrectFuelType(vehicleName, vehState["fuel-type"] or fuelType.DEFAULT)
+	local ret = utils.isCorrectFuelType(vehicleName, vehicleFuelType or fuelType.DEFAULT)
 
 	if not ret then
 		WRONG_FUEL = true
 		fuel.setFuel(vehState, vehicle, 6, true)
+		vehState:set("wrong-fuel", true, true)
 	end
 
 	while cache.seat == -1 and not WRONG_FUEL do
+		if WRONG_FUEL then break end
 		if not DoesEntityExist(vehicle) then return end
 
 		local fuelAmount = tonumber(vehState.fuel)
@@ -67,7 +63,7 @@ local function startDrivingVehicle()
 					fuelTick = 0
 				end
 
-				fuel.setFuel(vehState, vehicle, newFuel, fuelTick == 0)
+				fuel.setFuel(vehState, vehicle, newFuel, fuel == 0)
 				fuelTick += 1
 			end
 		end
@@ -89,13 +85,6 @@ lib.onCache('seat', function(seat)
 		SetTimeout(0, startDrivingVehicle)
 	end
 end)
-
-Citizen.CreateThread((function()
-	local vehicle = GetVehiclePedIsIn(cache.ped, false)
-	if vehicle then
-		local state = Entity(vehicle).state
-	end
-end))
 
 if config.ox_target then return require 'client.target' end
 
